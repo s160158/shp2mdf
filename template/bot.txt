@@ -1,0 +1,34 @@
+
+   [BREAKER_LINES]
+      Data = '0 '
+   EndSect  // BREAKER_LINES
+
+   [MESH]
+      Data = 0
+      Nodes = 0
+      Max_Node_Count = 500000
+      Elements = 0
+      Max_Element_Count = 500000
+      Segments = 0
+      Max_Segment_Count = 500000
+   EndSect  // MESH
+
+   [CURVE_OBJECT]
+      Data = '0 0 0 1 1 1 152 187 0 0 0 0 5 Curve 1 2 1 1 1  152 187 1 '
+   EndSect  // CURVE_OBJECT
+
+   [SHORELINE_DATA]
+      Baseline_code = 100
+      Coastline_code = 110
+      Edge_map_code = 120
+      [PROFILES]
+         Profile_start = -200
+         Profile_end = 800
+         Number_of_points = 101
+         Type_z = 1
+      EndSect  // PROFILES
+
+   EndSect  // SHORELINE_DATA
+
+EndSect  // MESH_DATA
+

@@ -1,0 +1,98 @@
+// Created     : 2017-11-23 9:14:58
+// DLL id      : C:\Program Files (x86)\DHI\2016\bin\x64\pfs2004.dll
+// PFS version : Nov 16 2016 19:57:46
+
+[MESH_EDITOR_SCATTERDATAFILE_SETTINGS]
+   [MESH_EDITOR_SCATTERDATAFILE]
+   EndSect  // MESH_EDITOR_SCATTERDATAFILE
+
+   [MESH_EDITOR_PROFILEDATAFILE]
+   EndSect  // MESH_EDITOR_PROFILEDATAFILE
+
+EndSect  // MESH_EDITOR_SCATTERDATAFILE_SETTINGS
+
+[MESH_EDITOR_BACKGROUND_SETTINGS]
+   [IMAGE_FILES]
+   EndSect  // IMAGE_FILES
+
+EndSect  // MESH_EDITOR_BACKGROUND_SETTINGS
+
+[MESH_DATA]
+   Save_Data_As_String = true
+   version = 600
+   Interpolate_Using_String_Data = true
+   [DATA_AREA]
+      x0 = 495000
+      y0 = -2500
+      x1 = 505000
+      y1 = 2500
+      UTMZone = 'PROJCS["WGS_1984_UTM_Zone_32N",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",9],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0],UNIT["Meter",1]]'
+   EndSect  // DATA_AREA
+
+   [INTERNAL]
+      Use_Fast_Point_Read = true
+   EndSect  // INTERNAL
+
+   [TRIANGULATION_OPTIONS]
+      DefaultIsSet = true
+      Maximum_Area = 50000
+      Minimum_Angle = 26
+      Limit_Num_Elements = true
+      Max_Num_Elements = 100000
+      Use_Command_Line = false
+      Command_Line = 'pzAenq26a100'
+   EndSect  // TRIANGULATION_OPTIONS
+
+   [SMOOTHING_OPTIONS_1]
+      Iterations = 10
+      ConstrainedSmoothing = 0
+      ArcNodesFixed = 1
+   EndSect  // SMOOTHING_OPTIONS_1
+
+   [INTERPOLATION_OPTION]
+      Method = 0
+      Truncate = false
+      Truncate_Min = -1e+030
+      Truncate_Max = 1e+030
+      Extrapolate = 0
+      CopyValue = false
+      MaxDistance = 100
+      InverseDistanceWeightedP = 2
+      BoundaryMethod = 0
+      [NATURAL_NEIGHBOUR_OPTION]
+         Extrapolate = 1
+         Bounding_Window_Size = 1000
+      EndSect  // NATURAL_NEIGHBOUR_OPTION
+
+   EndSect  // INTERPOLATION_OPTION
+
+   [REFINEMENT_OPTIONS]
+      Factor = 1.5
+      Iterations = 5
+   EndSect  // REFINEMENT_OPTIONS
+
+   [MESHEDITING_OPTIONS]
+      DeleteMeshNodeAction = 0
+      CodeValueSetting = 0
+      CodeValue = 1
+      ReTriangulateAddNode = 0
+   EndSect  // MESHEDITING_OPTIONS
+
+   [ANALYSEMESH_OPTIONS]
+      AnalyseMethod = 0
+      WaterLevel = 0
+      WaterDepth = 1
+      CFL = 0.8
+      RowCount = 10
+   EndSect  // ANALYSEMESH_OPTIONS
+
+   [PRIORITIZE_DATA_OPTIONS]
+      Use_Prioritization = false
+      Global_Prioritization = 0
+      [WEIGHTS]
+      EndSect  // WEIGHTS
+
+      [LOCAL_PRIORITIZATION_POLYGON_LIST]
+      EndSect  // LOCAL_PRIORITIZATION_POLYGON_LIST
+
+   EndSect  // PRIORITIZE_DATA_OPTIONS

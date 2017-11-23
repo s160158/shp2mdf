@@ -1,0 +1,6 @@
+test/*
+!./test/BYGNING.*
+!./test/VEJKANT.*
+
+
+*.pyc

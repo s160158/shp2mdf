@@ -1,0 +1,12 @@
+
+   [POINTS]
+      Data = '0 '
+   EndSect  // POINTS
+
+   [ARCS]
+      Data = '0 '
+   EndSect  // ARCS
+
+   [POLYGONS]
+      Data = '0 '
+   EndSect  // POLYGONS

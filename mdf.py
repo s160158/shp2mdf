@@ -5,78 +5,34 @@ TODO:
 - Class initialisers need checks (many things can go wrong!) raise errors : e.g., raise ValueError("A polygon most have at least 3 arcs!")
 - polygon default x, y to 0, 0. Not needed. can be generated as a centroid from its defining points when attached to an Mdf instance
 - how do the colors and border thickness values look like? ("hard-code" some sensible default ones)
+- stitch together top, mid and bot
+- make header function
+- number of whitespaces does no difference
+
+header sample:
+
+// Created     : 2017-11-23 9:8:28
+// DLL id      : C:\Program Files (x86)\DHI\2016\bin\x64\pfs2004.dll
+// PFS version : Nov 16 2016 19:57:46
+
+(not required)
 
 """
 
-
-class Mdf:
-    points = []
-    arcs = []
-    polygons = []
-
-    def __init__(self):
-        pass
-
-    def add_point(self, point):
-        if point.__class__.__name__ == 'MdfPoint':
-            self.points.append(point)
-            return 0
-        else:
-            return 1
-
-    def add_arc(self, arc):
-        if arc.__class__.__name__ == 'MdfArc':
-            self.arcs.append(arc)
-            return 0
-        else:
-            return 1
-
-    def add_polygon(self, polygon):
-        if polygon.__class__.__name__ == 'MdfPolygon':
-            self.polygons.append(polygon)
-            return 0
-        else:
-            return 1
-
-    def _nrepr(self, lst):
-        line = ''
-        for i in range(0, len(lst)):
-            line += '{} {} '.format(str(i), repr(lst[i]))  # Adds index number to join
-        return line
-
-    def __repr__(self):
-        mdf = ''
-        # Points
-        mdf += """
-[POINTS]
-    Data = '{} {}'
-EndSect // Points""".format(len(self.points), self._nrepr(self.points))
-        # Arcs
-        mdf += """
-[ARCS]
-    Data = '{} {}'
-EndSect // Arcs""".format(len(self.arcs), self._nrepr(self.arcs))
-        # Polygons
-        mdf += """
-[POLYGONS]
-    Data = '{}'
-EndSect // Polygons""".format(' '.join(map(repr, self.polygons)))
-
-        return mdf
-
-    def save(self, filename):
-        fh = open(filename, 'w')
-        fh.write(self.__repr__())
-        fh.close()
-
-
 class MdfPoint:
-    def __init__(self, x, y, attr1 = 0, attr2 = 0):
+    x = 0; y = 0
+    attr1 = 0; attr2 = 0
+
+    isNode = 0
+    def __init__(self, x, y, attr1 = 0, attr2 = 0, isNode = 0):
         self.x = x
         self.y = y
         self.attr1 = attr1
         self.attr2 = attr2
-        self.isNode = False
+        if isNode:
+            self.isNode = True
+        else:
+            self.isNode = False
 
     def __str__(self):
         return 'MdfPoint: (x, y) = ({}, {}), attr1 = {}, attr2 = {}, isNode : {}'.format(self.x, self.y, self.attr1,
@@ -86,8 +42,9 @@ class MdfPoint:
         return '{} {} {} {} {}'.format(self.x, self.y, self.attr1, self.attr2, int(self.isNode))
 
 
-class MdfArc:
-    def __init__(self, vertices, start_node = -1, end_node = -1, attr = 0):
+class MdfArc:  # desirable to make the class more loose and allow user to not define start and end (empty arcs)?
+    """
+        def __init__(self, vertices, start_node = -1, end_node = -1, attr = 0):
         if start_node == end_node == -1 and len(vertices) > 1:  # Not defined, take start/end nodes from vertices
             self.vertices = vertices
             self.startNode = vertices[0]
@@ -103,6 +60,23 @@ class MdfArc:
             self.startNode = start_node
             self.endNode = end_node
         self.attr = attr
+    """
+    vertices = []
+    startNode = -1
+    endNode = -1
+    attr = 0
+
+    def __init__(self, vertices = [], start_node = -1, end_node = -1, attr = 0):
+        self.vertices = vertices
+        self.startNode = start_node
+        self.endNode = end_node
+        self.attr = attr
+
+    def set_start_node(self):
+        pass
+
+    def add_vertex(self, vertex):
+        self.vertices.append(vertex)
 
     def __str__(self):
         return '{}, {}, {}, attr : {}'.format(self.startNode, str(self.vertices), self.endNode, self.attr)
@@ -145,27 +119,150 @@ class MdfPolygon:
                                   self.nArcs, arcs]))
 
 
+class Mdf:
+    points = []
+    arcs = []
+    polygons = []
+
+    def __init__(self):
+        pass
+
+    def add_point(self, point):
+        if point.__class__.__name__ == 'MdfPoint':
+            if self.drawing_arc and self.arc.startNode == -1:
+                point.isNode = True
+                self.arc.startNode = len(self.points) # point not yet appended
+                print 'adding node: %d ' % len(self.points)
+            elif self.drawing_arc and self.arc.startNode != -1:
+                point.isNode = False
+                self.arc.add_vertex(len(self.points))
+                print 'adding vertex: %d' % len(self.points)
+            self.points.append(point)
+        else:
+            raise ValueError('not a MdfPoint object')
+
+    def add_arc(self, arc):
+        if arc.__class__.__name__ == 'MdfArc':
+            self.arcs.append(arc)
+        else:
+            raise ValueError('not a MdfArc object')
+
+    arc = MdfArc()
+    drawing_arc = False
+    def start_arc(self):
+        if self.drawing_arc:
+            raise ValueError('already drawing arc, please call .end_arc()')
+        else:
+            self.arc = MdfArc([], -1, -1, 0)
+            self.drawing_arc = True
+
+    def end_arc(self):
+        if self.drawing_arc:
+            self.arc.endNode = self.arc.vertices[-1] # Last point in vertices is end node
+            print self.arc.vertices
+            print self.arc.vertices[-1]
+            print self.arc.endNode
+            self.arc.vertices.pop() # No longer a vertex, is a node so remove it
+            self.points[-1].isNode = True # Must be node (an arc ends point)
+            self.arcs.append(self.arc)
+            print 'added arc: {}'.format(str(self.arc))
+            self.drawing_arc = False
+            self.arc = MdfArc([], -1, -1, 0)
+            print self.arc
+        else:
+            raise ValueError('ending arc before starting it, please call .start_arc()')
+
+    def add_polygon(self, polygon):
+        if polygon.__class__.__name__ == 'MdfPolygon':
+            self.polygons.append(polygon)
+        else:
+            raise ValueError('not a MdfPolygon object')
+
+    def _nrepr(self, lst):
+        # MDF requires that each element is marked with a number. This methods adds the index number of list element
+        # in front
+        line = ''
+        for i in range(0, len(lst)):
+            line += '{} {} '.format(str(i), repr(lst[i]))  # Adds index number to join
+        return line
+
+    def __repr__(self):
+        # A string representation the Mike Mesh Generator can understand
+        mdf = ''
+        # Points
+        mdf += """
+[POINTS]
+    Data = '{} {}'
+EndSect // POINTS""".format(len(self.points), self._nrepr(self.points))
+        # Arcs
+        mdf += """
+[ARCS]
+    Data = '{} {}'
+EndSect // ARCS""".format(len(self.arcs), self._nrepr(self.arcs))
+        # Polygons
+        mdf += """
+[POLYGONS]
+    Data = '{}'
+EndSect // POLYGONS""".format(' '.join(map(repr, self.polygons)))
+
+        return self.stitch_3parts(mdf)
+
+    def stitch_3parts(self, mid):
+        # Stitching MDF together. Consisting of top, mid, and bot. top and bot are given in ./template. mid must be
+        # input as a string. The middle part mid is the generated POINTS, ARCS, POLYGONS
+        mdf = ''
+
+        fh_top = open('./template/top.txt', 'r')  # top part of MDF
+
+        for line in fh_top:
+            mdf += line
+
+        fh_top.close()
+
+        mdf += mid  # middle part of MDF (the part this class is used to generate)
+
+        fh_bot = open('./template/bot.txt', 'r') # the bottom part of MDF
+
+        for line in fh_bot:
+            mdf += line
+
+        fh_bot.close()
+
+        return mdf
+
+    def save(self, filename):
+        fh = open(filename, 'w')
+        fh.write(self.__repr__())
+        fh.close()
+
 if __name__=='__main__':
+    # cornerbox example: (including polygon)
     mdf1 = Mdf()
 
-    p1 = MdfPoint(3, 4, 100, 0)
+    p1 = MdfPoint(722600, 6184020, 0, 0, 1)
     mdf1.add_point(p1)
-    p2 = MdfPoint(5, 6, 100, 0)
-    mdf1.add_point(p2)
-    p3 = MdfPoint(3, 7, 100, 0)
-    mdf1.add_point(p3)
+    p1 = MdfPoint(722600, 6184300, 0, 0, 1)
+    mdf1.add_point(p1)
+    p1 = MdfPoint(722880, 6184020, 0, 0, 1)
+    mdf1.add_point(p1)
+    p1 = MdfPoint(722880, 6184300, 0, 0, 1)
+    mdf1.add_point(p1)
 
-
-    a1 = MdfArc([], 0, 1)
+    a1 = MdfArc([], 1, 0)
     mdf1.add_arc(a1)
-    a2 = MdfArc([], 1, 2)
+    a2 = MdfArc([], 0, 2)
     mdf1.add_arc(a2)
-    a3 = MdfArc([], 2, 0)
+    a3 = MdfArc([], 2, 3)
+    mdf1.add_arc(a3)
+    a3 = MdfArc([], 3, 1)
     mdf1.add_arc(a3)
 
-    h1 = MdfPolygon('poly1', 5, 5, 0, 2, [1])
+    h1 = MdfPolygon('poly1', 722706, 6184140, 0, 2, [1, 3])
     mdf1.add_polygon(h1)
 
     # Check
     print repr(mdf1)
     mdf1.save('./test/t1.mdf')
+
+    # line example:
+
