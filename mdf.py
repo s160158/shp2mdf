@@ -2,10 +2,9 @@
 
 """
 TODO:
-- Class initialisers need checks (many things can go wrong!) raise errors : e.g., raise ValueError("A polygon most have at least 3 arcs!")
+- Class initialisers need checks (many things can go wrong!) raise errors : e.g., raise ValueError("fdlafladl")
 - polygon default x, y to 0, 0. Not needed. can be generated as a centroid from its defining points when attached to an Mdf instance
 - how do the colors and border thickness values look like? ("hard-code" some sensible default ones)
-- stitch together top, mid and bot
 - make header function
 - number of whitespaces does no difference
 
@@ -43,24 +42,6 @@ class MdfPoint:
 
 
 class MdfArc:  # desirable to make the class more loose and allow user to not define start and end (empty arcs)?
-    """
-        def __init__(self, vertices, start_node = -1, end_node = -1, attr = 0):
-        if start_node == end_node == -1 and len(vertices) > 1:  # Not defined, take start/end nodes from vertices
-            self.vertices = vertices
-            self.startNode = vertices[0]
-            self.endNode = vertices[-1]
-            self.vertices.pop(0)
-            self.vertices.pop(-1)
-        elif (start_node != -1 and end_node == -1) or (start_node == -1 and end_node != -1):
-            return  # No object should be created
-        elif start_node == end_node == -1 and len(vertices) < 2:  # At least two points needed to define an arc
-            return  # No object should be created
-        else:
-            self.vertices = vertices
-            self.startNode = start_node
-            self.endNode = end_node
-        self.attr = attr
-    """
     vertices = []
     startNode = -1
     endNode = -1
@@ -97,7 +78,7 @@ class MdfPolygon:
     unknowns = '0 0 0 0 0 1 1000 2 2 0 10'
     method = 0  # Quadrilateral mesh generation method. 0: algebraic, 1: transfinite
 
-    def __init__(self, name, x, y, start_arc, end_arc, arcs = [], mesh_code = 1):  # A polygon needs at least 3 arcs! So arcs can't be empty
+    def __init__(self, name, x, y, start_arc, end_arc, arcs = [], mesh_code = 1):  # Polygon can be formed by a single arc (give points)
         self.name = name
         self.nLetters = len(name)
         self.x = x
@@ -178,6 +159,30 @@ class Mdf:
         else:
             raise ValueError('not a MdfPolygon object')
 
+    def get_centroid(self, MdfType): # what if startArc == endArc problem ...? only one arc in polygon
+        if MdfType.__class__.__name__ == 'MdfPolygon':
+            arcs = MdfType.arcs
+            arcs.append(MdfType.startArc)
+            arcs.append(MdfType.endArc)
+            print arcs
+            n = 0
+            centroid_x = 0
+            centroid_y = 0
+            for arc in arcs:
+                print arcs[arc]
+                print self.arcs[arc].vertices
+                for i in self.arcs[arc].vertices:
+                    print self.points[i]
+                    n += 1
+                centroid_x += self.points[self.arcs[arc].startNode].x
+                centroid_x += self.points[self.arcs[arc].endNode].x
+                centroid_y += self.points[self.arcs[arc].startNode].y
+                centroid_y += self.points[self.arcs[arc].endNode].y
+                n += 2
+        centroid_x = centroid_x / n
+        centroid_y = centroid_y / n
+        return (centroid_x, centroid_y)
+
     def _nrepr(self, lst):
         # MDF requires that each element is marked with a number. This methods adds the index number of list element
         # in front
@@ -202,8 +207,8 @@ EndSect // ARCS""".format(len(self.arcs), self._nrepr(self.arcs))
         # Polygons
         mdf += """
 [POLYGONS]
-    Data = '{}'
-EndSect // POLYGONS""".format(' '.join(map(repr, self.polygons)))
+    Data = '{} {}'
+EndSect // POLYGONS""".format(len(self.polygons), ' '.join(map(repr, self.polygons)))
 
         return self.stitch_3parts(mdf)
 
@@ -258,10 +263,16 @@ if __name__=='__main__':
     mdf1.add_arc(a3)
 
     h1 = MdfPolygon('poly1', 722706, 6184140, 0, 2, [1, 3])
+    cen = mdf1.get_centroid(h1)
+    print cen
+    h1.x = cen[0]
+    h1.y = cen[1]
     mdf1.add_polygon(h1)
 
-    # Check
-    print repr(mdf1)
+    print h1.arcs
+
+
+    #print repr(mdf1)
     mdf1.save('./test/t1.mdf')
 
     # line example:
