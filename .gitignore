@@ -1,6 +1,13 @@
+thumbs.db
+
 test/*
 !./test/BYGNING.*
 !./test/VEJKANT.*
 
 
 *.pyc
+
+# PyCharm project settings
+.idea/
+venv*/ # environments
+venv/

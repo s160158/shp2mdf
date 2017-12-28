@@ -159,7 +159,7 @@ class Mdf:
         else:
             raise ValueError('not a MdfPolygon object')
 
-    def get_centroid(self, MdfType): # what if startArc == endArc problem ...? only one arc in polygon
+    def get_centroid(self, MdfType): # what if startArc == endArc problem ...? only one arc in polygon DO NOT USE!
         if MdfType.__class__.__name__ == 'MdfPolygon':
             arcs = MdfType.arcs
             arcs.append(MdfType.startArc)
