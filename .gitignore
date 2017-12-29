@@ -1,8 +1,10 @@
 thumbs.db
 
 test/*
-!./test/BYGNING.*
+!./test/POINT.*
 !./test/VEJKANT.*
+!./test/BYGNING.*
+
 
 
 *.pyc

@@ -1,8 +1,45 @@
 #!/usr/bin/env python
 
-# MIKE can't load the files when they become to large?
 from osgeo import ogr
 from mdf import Mdf, MdfPoint, MdfArc, MdfPolygon
+from ogr_helpers import *
+
+def read_point(shp):
+    shp_ds = ogr.Open(shp)
+    shp_lyr = shp_ds.GetLayer()
+
+    print 'found %d number of features!' % len(shp_lyr)
+
+
+    for feat in shp_lyr:
+        geom = feat.GetGeometryRef()
+        print 'number of points: {}'.format(geom.GetPointCount())
+
+        for i in range(0, geom.GetPointCount()):
+            print 'Point: ({}, {})'.format(geom.GetPoint(i)[0], geom.GetPoint(i)[1])
+
+
+def shp2mdf_point(shp):
+    shp_ds = ogr.Open(shp)
+    shp_lyr = shp_ds.GetLayer()
+
+    print 'found %d number of features!' % len(shp_lyr)
+
+    mdf_object = Mdf()
+
+    for feat in shp_lyr:
+        geom = feat.GetGeometryRef()
+        print 'number of points: {}'.format(geom.GetPointCount())
+
+        for i in range(0, geom.GetPointCount()):
+            p = MdfPoint(geom.GetPoint(i)[0], geom.GetPoint(i)[1], 0, 0, 0)
+            mdf_object.add_point(p)
+
+
+    mdf = shp.split('/')[-1].split('.')[0] + '.mdf'
+    mdf_object.save('./test/' + mdf)
+
+
 
 def read_line(shp):
     shp_ds = ogr.Open(shp)
@@ -105,51 +142,15 @@ def shp2mdf_poly(shp):
     mdf = shp.split('/')[-1].split('.')[0] + '.mdf'
     mdf_object.save('./test/' + mdf)
 
-def point_inside_poly(x, y, geom):
-    #geom is a polygon geometry object
-    ring = geom.GetGeometryRef(0)
-    poly = []
-    for i in range(0, ring.GetPointCount()):
-        poly.append((ring.GetPoint(i)[0], ring.GetPoint(i)[1]))
 
-    n = len(poly)
-    inside =False
-
-    p1x,p1y = poly[0]
-    for i in range(n+1):
-        p2x,p2y = poly[i % n]
-        if y > min(p1y,p2y):
-            if y <= max(p1y,p2y):
-                if x <= max(p1x,p2x):
-                    if p1y != p2y:
-                        xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
-                    if p1x == p2x or x <= xinters:
-                        inside = not inside
-        p1x,p1y = p2x,p2y
-
-    return inside
-
-def three_point_centroid(geom):
-    #iterates over points in polygon and returns the triangel with centroid within the polygon
-    ring = geom.GetGeometryRef(0)
-    poly = []
-    for i in range(0, ring.GetPointCount()):
-        poly.append((ring.GetPoint(i)[0], ring.GetPoint(i)[1]))
-
-    n = len(poly)
-
-    for i in range(0, n):
-        for j in range(i + 1, n):
-            for k in range(j + 1, n):
-                x = (poly[i][0] + poly[j][0] + poly[k][0] ) / 3
-                y = (poly[i][1] + poly[j][1] + poly[k][1] ) / 3
-                if point_inside_poly(x, y, geom):
-                    return (x, y)
-        raise ValueError('Could not find a suitable centroid!')
 
 if __name__=='__main__':
+    # Test point:
+    shp2mdf_point('./test/POINT.shp')
+    #read_point('./test/POINT.shp')
+
     # Test line:
-    #shp2mdf_line('./test/VEJKANT2.shp')
+    #shp2mdf_line('./test/VEJKANT1.shp')
 
     # Test polygon:
-    shp2mdf_poly('./test/BYGNING3.shp')
+    #shp2mdf_poly('./test/BYGNING4.shp')

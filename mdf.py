@@ -1,23 +1,5 @@
 #!/usr/bin/env python
 
-"""
-TODO:
-- Class initialisers need checks (many things can go wrong!) raise errors : e.g., raise ValueError("fdlafladl")
-- polygon default x, y to 0, 0. Not needed. can be generated as a centroid from its defining points when attached to an Mdf instance
-- how do the colors and border thickness values look like? ("hard-code" some sensible default ones)
-- make header function
-- number of whitespaces does no difference
-
-header sample:
-
-// Created     : 2017-11-23 9:8:28
-// DLL id      : C:\Program Files (x86)\DHI\2016\bin\x64\pfs2004.dll
-// PFS version : Nov 16 2016 19:57:46
-
-(not required)
-
-"""
-
 class MdfPoint:
     x = 0; y = 0
     attr1 = 0; attr2 = 0
