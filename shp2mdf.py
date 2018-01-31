@@ -114,23 +114,26 @@ def shp2mdf_poly(shp):
         print 'number of points: {}'.format(geom.GetPointCount())
 
         print 'pre %s' % str(mdf_object.arc.vertices)
-        mdf_object.start_arc()
+        mdf_object.start_arc()  # Start drawing an arc (a polygon in this case)
 
         geom = feat.GetGeometryRef()
         ring = geom.GetGeometryRef(0)
         for i in range(0, ring.GetPointCount()):
             print ''.join([str(ring.GetPoint(i)[0]), ' ', str(ring.GetPoint(i)[1]), ' ', '1\n'])
             p = MdfPoint(ring.GetPoint(i)[0], ring.GetPoint(i)[1], 0, 0, 0)
-            mdf_object.add_point(p)
+            mdf_object.add_point(p)  # Add points to arc
 
-        mdf_object.end_arc()
+        mdf_object.end_arc()  # End the arc
 
+        # Add polygon definition point
         poly = MdfPolygon('poly' + str(id), 0, 0, len(mdf_object.arcs) - 1, len(mdf_object.arcs) - 1)
-         # need no necessarily be inside of the polygon if it is non-convex(concave)
+        # need no necessarily be inside of the polygon if it is non-convex(concave)
         poly.x = geom.Centroid().GetX()
         poly.y = geom.Centroid().GetY()
 
-        if not point_inside_poly(poly.x, poly.y, geom): #prefer centroid if inside polygon!
+        poly.method = 0
+
+        if not point_inside_poly(poly.x, poly.y, geom):  # prefer centroid if inside polygon!
             poly.x, poly.y = three_point_centroid(geom)
             print 'Polygon defintion point: ({}, {})'.format(poly.x, poly.y)
 
@@ -147,10 +150,9 @@ def shp2mdf_poly(shp):
 if __name__=='__main__':
     # Test point:
     shp2mdf_point('./test/POINT.shp')
-    #read_point('./test/POINT.shp')
 
     # Test line:
-    #shp2mdf_line('./test/VEJKANT1.shp')
+    #shp2mdf_line('./test/VEJKANT.shp')
 
     # Test polygon:
-    #shp2mdf_poly('./test/BYGNING4.shp')
+    #shp2mdf_poly('./test/BYGNING.shp')

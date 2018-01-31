@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from osgeo import ogr
-
 def point_inside_poly(x, y, geom):
     """
     Check if a point given by a x- and y-coordinate is within a polygon.
@@ -16,27 +14,28 @@ def point_inside_poly(x, y, geom):
         poly.append((ring.GetPoint(i)[0], ring.GetPoint(i)[1]))
 
     n = len(poly)
-    inside =False
+    inside = False
 
-    p1x,p1y = poly[0]
-    for i in range(n+1):
-        p2x,p2y = poly[i % n]
-        if y > min(p1y,p2y):
-            if y <= max(p1y,p2y):
-                if x <= max(p1x,p2x):
+    p1x, p1y = poly[0]
+    for i in range(n + 1):
+        p2x, p2y = poly[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
                     if p1y != p2y:
-                        xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                        xinters = (y - p1y)*(p2x - p1x)/(p2y - p1y) + p1x
                     if p1x == p2x or x <= xinters:
                         inside = not inside
-        p1x,p1y = p2x,p2y
+        p1x, p1y = p2x, p2y
 
     return inside
 
 def three_point_centroid(geom):
     """
-    Return the centroid of the first three points found in polygon if their centroid is within the polygon.
+    Find and return a point inside a polygon by forming trangles by iterating over vertices 3-by-3. Return the first
+    centroid within the polygon.
     :param geom: ogr geometry object of polygon
-    :return:
+    :return: a point within the polygon
     """
     ring = geom.GetGeometryRef(0)
     poly = []

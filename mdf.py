@@ -223,7 +223,7 @@ EndSect // POLYGONS""".format(len(self.polygons), ' '.join(map(repr, self.polygo
         fh.close()
 
 if __name__=='__main__':
-    # cornerbox example: (including polygon)
+    # Example of usage:
     mdf1 = Mdf()
 
     p1 = MdfPoint(722600, 6184020, 0, 0, 1)
@@ -254,8 +254,6 @@ if __name__=='__main__':
     print h1.arcs
 
 
-    #print repr(mdf1)
+    print repr(mdf1)
     mdf1.save('./test/t1.mdf')
-
-    # line example:
 
