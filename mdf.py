@@ -1,38 +1,27 @@
 #!/usr/bin/env python
 
 class MdfPoint:
-    x = 0; y = 0
-    attr1 = 0; attr2 = 0
-
-    isNode = 0
-    def __init__(self, x, y, attr1 = 0, attr2 = 0, isNode = 0):
+    def __init__(self, x, y, attr1 = 0, attr2 = 0, node = 0): # node = 1, vertex = 0
         self.x = x
         self.y = y
         self.attr1 = attr1
         self.attr2 = attr2
-        if isNode:
-            self.isNode = True
-        else:
-            self.isNode = False
+        self.node = node
 
     def __str__(self):
-        return 'MdfPoint: (x, y) = ({}, {}), attr1 = {}, attr2 = {}, isNode : {}'.format(self.x, self.y, self.attr1,
-                                                                                         self.attr2, self.isNode)
-
+        return 'MdfPoint: (x, y) = ({}, {}), attr1 = {}, attr2 = {}, node : {}'.format(self.x, self.y,
+                                                                                       self.attr1,
+                                                                                       self.attr2,
+                                                                                       self.node)
     def __repr__(self):
-        return '{} {} {} {} {}'.format(self.x, self.y, self.attr1, self.attr2, int(self.isNode))
+        return '{} {} {} {} {}'.format(self.x, self.y, self.attr1, self.attr2, self.node)
 
 
 class MdfArc:  # desirable to make the class more loose and allow user to not define start and end (empty arcs)?
-    vertices = []
-    startNode = -1
-    endNode = -1
-    attr = 0
-
     def __init__(self, vertices = [], start_node = -1, end_node = -1, attr = 0):
         self.vertices = vertices
-        self.startNode = start_node
-        self.endNode = end_node
+        self.start_node = start_node
+        self.end_node = end_node
         self.attr = attr
 
     def set_start_node(self):
@@ -42,76 +31,54 @@ class MdfArc:  # desirable to make the class more loose and allow user to not de
         self.vertices.append(vertex)
 
     def __str__(self):
-        return '{}, {}, {}, attr : {}'.format(self.startNode, str(self.vertices), self.endNode, self.attr)
+        return '{}, {}, {}, attr : {}'.format(self.start_node, str(self.vertices), self.end_node, self.attr)
 
     def __repr__(self):
-        return '{} {} {} {} {}'.format(self.startNode, self.endNode, len(self.vertices),
+        return '{} {} {} {} {}'.format(self.start_node, self.end_node, len(self.vertices),
                                        ' '.join(map(str, self.vertices)), self.attr)  # Mapping list of integers to
                                                                                       # list of strings
 
 
 class MdfPolygon:
-
     # Default values:
     visuals = [0, 0, 1]  # Fill color, border color, and border thickness
-    localMin = 1
-    maxArea = 100
+    local_min = 1
+    max_area = 100
     res = (1, 1)  # Resolution eta and xi
     unknowns = '0 0 0 0 0 1 1000 2 2 0 10'
     method = 0  # Quadrilateral mesh generation method. 0: algebraic, 1: transfinite
 
     def __init__(self, name, x, y, start_arc, end_arc, arcs = [], mesh_code = 1):  # Polygon can be formed by a single arc (give points)
         self.name = name
-        self.nLetters = len(name)
+        self.n_name = len(name)
         self.x = x
         self.y = y
-        self.startArc = start_arc
-        self.endArc = end_arc
+        self.start_arc = start_arc
+        self.end_arc = end_arc
         self.arcs = arcs
-        self.nArcs = len(arcs)
-        self.meshCode = mesh_code
+        self.n_arcs = len(arcs)
+        self.mesh_code = mesh_code
 
     def __str__(self):
-        return 'MdfPolygon: name = {}, x = {}, y = {}, mesh_code = {}'.format(self.name, self.x, self.y, self.meshCode)
+        return 'MdfPolygon: name = {}, x = {}, y = {}, mesh_code = {}'.format(self.name, self.x, self.y, self.mesh_code)
 
     def __repr__(self):
         arcs = ' '.join(map(str, self.arcs))
-        return ' '.join(map(str, [self.nLetters, self.name, self.x, self.y, self.meshCode, 0, self.startArc,
-                                  self.endArc, self.visuals[0], self.visuals[1], self.visuals[2], self.localMin,
-                                  self.maxArea, self.method, 0, self.res[0], self.res[1], self.unknowns,
-                                  self.nArcs, arcs]))
+        return ' '.join(map(str, [self.n_name, self.name, self.x, self.y, self.mesh_code, 0, self.start_arc,
+                                  self.end_arc, self.visuals[0], self.visuals[1], self.visuals[2], self.local_min,
+                                  self.max_area, self.method, 0, self.res[0], self.res[1], self.unknowns,
+                                  self.n_arcs, arcs]))
 
 
 class Mdf:
-    points = []
-    arcs = []
-    polygons = []
+    def __init__(self, points = [], arcs = [], polygons = []):
+        self.points = points
+        self.arcs = arcs
+        self.polygons = polygons
 
-    def __init__(self):
-        pass
+        self.arc = MdfArc()
+        self.drawing_arc = False
 
-    def add_point(self, point):
-        if point.__class__.__name__ == 'MdfPoint':
-            if self.drawing_arc and self.arc.startNode == -1:
-                point.isNode = True
-                self.arc.startNode = len(self.points) # point not yet appended
-                print 'adding node: %d ' % len(self.points)
-            elif self.drawing_arc and self.arc.startNode != -1:
-                point.isNode = False
-                self.arc.add_vertex(len(self.points))
-                print 'adding vertex: %d' % len(self.points)
-            self.points.append(point)
-        else:
-            raise ValueError('not a MdfPoint object')
-
-    def add_arc(self, arc):
-        if arc.__class__.__name__ == 'MdfArc':
-            self.arcs.append(arc)
-        else:
-            raise ValueError('not a MdfArc object')
-
-    arc = MdfArc()
-    drawing_arc = False
     def start_arc(self):
         if self.drawing_arc:
             raise ValueError('already drawing arc, please call .end_arc()')
@@ -119,14 +86,24 @@ class Mdf:
             self.arc = MdfArc([], -1, -1, 0)
             self.drawing_arc = True
 
+    def add_point(self, point):
+        if self.drawing_arc and self.arc.start_node == -1:
+            point.node = 1 # node
+            self.arc.start_node = len(self.points) # point not yet appended
+            print 'adding node: %d ' % len(self.points)
+        elif self.drawing_arc and self.arc.start_node != -1:
+            point.node = 0 # vertex
+            self.arc.add_vertex(len(self.points))
+            print 'adding vertex: %d' % len(self.points)
+        self.points.append(point)
+
+
     def end_arc(self):
         if self.drawing_arc:
-            self.arc.endNode = self.arc.vertices[-1] # Last point in vertices is end node
-            print self.arc.vertices
-            print self.arc.vertices[-1]
-            print self.arc.endNode
+            self.arc.end_node = self.arc.vertices[-1] # Last point in vertices is end node
+            print 'changed to node: %d' % self.arc.end_node
             self.arc.vertices.pop() # No longer a vertex, is a node so remove it
-            self.points[-1].isNode = True # Must be node (an arc ends point)
+            self.points[-1].node = 1 # Must be node (an arc ends point)
             self.arcs.append(self.arc)
             print 'added arc: {}'.format(str(self.arc))
             self.drawing_arc = False
@@ -135,17 +112,17 @@ class Mdf:
         else:
             raise ValueError('ending arc before starting it, please call .start_arc()')
 
-    def add_polygon(self, polygon):
-        if polygon.__class__.__name__ == 'MdfPolygon':
-            self.polygons.append(polygon)
-        else:
-            raise ValueError('not a MdfPolygon object')
+    def add_arc(self, arc):
+        self.arcs.append(arc)
 
-    def get_centroid(self, MdfType): # what if startArc == endArc problem ...? only one arc in polygon DO NOT USE!
+    def add_polygon(self, polygon):
+        self.polygons.append(polygon)
+
+    def get_centroid(self, MdfType): # what if start_arc == end_arc problem ...? only one arc in polygon DO NOT USE!
         if MdfType.__class__.__name__ == 'MdfPolygon':
             arcs = MdfType.arcs
-            arcs.append(MdfType.startArc)
-            arcs.append(MdfType.endArc)
+            arcs.append(MdfType.start_arc)
+            arcs.append(MdfType.end_arc)
             print arcs
             n = 0
             centroid_x = 0
@@ -156,10 +133,10 @@ class Mdf:
                 for i in self.arcs[arc].vertices:
                     print self.points[i]
                     n += 1
-                centroid_x += self.points[self.arcs[arc].startNode].x
-                centroid_x += self.points[self.arcs[arc].endNode].x
-                centroid_y += self.points[self.arcs[arc].startNode].y
-                centroid_y += self.points[self.arcs[arc].endNode].y
+                centroid_x += self.points[self.arcs[arc].start_node].x
+                centroid_x += self.points[self.arcs[arc].end_node].x
+                centroid_y += self.points[self.arcs[arc].start_node].y
+                centroid_y += self.points[self.arcs[arc].end_node].y
                 n += 2
         centroid_x = centroid_x / n
         centroid_y = centroid_y / n

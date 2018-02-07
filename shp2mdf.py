@@ -32,12 +32,13 @@ def shp2mdf_point(shp):
         print 'number of points: {}'.format(geom.GetPointCount())
 
         for i in range(0, geom.GetPointCount()):
-            p = MdfPoint(geom.GetPoint(i)[0], geom.GetPoint(i)[1], 0, 0, 0)
+            node = 1 #  if 1 a vertex, 0 a node
+            p = MdfPoint(geom.GetPoint(i)[0], geom.GetPoint(i)[1], 0, 0, node)
             mdf_object.add_point(p)
 
 
-    mdf = shp.split('/')[-1].split('.')[0] + '.mdf'
-    mdf_object.save('./test/' + mdf)
+    mdf = '/'.join(shp.split('/')[0:-1]) + '/' + ''.join(shp.split('/')[-1].split('.')[0:-1]) + '.mdf'
+    mdf_object.save(mdf)
 
 
 
@@ -68,18 +69,20 @@ def shp2mdf_line(shp):
         geom = feat.GetGeometryRef()
         print 'number of points: {}'.format(geom.GetPointCount())
 
-        print 'pre %s' % str(mdf_object.arc.vertices)
-        mdf_object.start_arc()
+        if geom.GetPointCount() > 1:  # 2 or more points to make line
 
-        for i in range(0, geom.GetPointCount()):
-            p = MdfPoint(geom.GetPoint(i)[0], geom.GetPoint(i)[1], 0, 0, 0)
-            mdf_object.add_point(p)
+            print 'pre %s' % str(mdf_object.arc.vertices)
+            mdf_object.start_arc()
 
-        mdf_object.end_arc()
-        print 'post %s' % str(mdf_object.arc.vertices)
+            for i in range(0, geom.GetPointCount()):
+                p = MdfPoint(geom.GetPoint(i)[0], geom.GetPoint(i)[1], 0, 0, 0)
+                mdf_object.add_point(p)
 
-    mdf = shp.split('/')[-1].split('.')[0] + '.mdf'
-    mdf_object.save('./test/' + mdf)
+            mdf_object.end_arc()
+            print 'post %s' % str(mdf_object.arc.vertices)
+
+    mdf = '/'.join(shp.split('/')[0:-1]) + '/' + ''.join(shp.split('/')[-1].split('.')[0:-1]) + '.mdf'
+    mdf_object.save(mdf)
 
 
 def read_poly(shp):
@@ -142,17 +145,23 @@ def shp2mdf_poly(shp):
         print 'post %s' % str(mdf_object.arc.vertices)
         id += 1
 
-    mdf = shp.split('/')[-1].split('.')[0] + '.mdf'
-    mdf_object.save('./test/' + mdf)
+    mdf = '/'.join(shp.split('/')[0:-1]) + '/' + ''.join(shp.split('/')[-1].split('.')[0:-1]) + '.mdf'
+    mdf_object.save(mdf)
 
 
 
 if __name__=='__main__':
     # Test point:
-    shp2mdf_point('./test/POINT.shp')
+    #shp2mdf_point('./test/POINT.shp')
 
     # Test line:
+    #read_line('./test/VEJKANT1.shp')
     #shp2mdf_line('./test/VEJKANT.shp')
 
     # Test polygon:
-    #shp2mdf_poly('./test/BYGNING.shp')
+    shp2mdf_poly('./test/BYGNING.shp')
+
+    #shp2mdf_point('C:/Users/thsu/Desktop/thesis/quad_meshes/mesh_local/box_02816x02816_0.2_2x2_point.shp')
+    #shp2mdf_point('C:/Users/thsu/Desktop/thesis/quad_meshes/mesh_regional/box_34672x28512_0.2_16x16_point.shp')
+
+

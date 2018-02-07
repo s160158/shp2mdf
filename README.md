@@ -22,3 +22,13 @@ header sample:
 
 (not required)
 
+- What is Curve object in template?
+
+-change the data area to be bounding box of input features
+
+   [DATA_AREA]
+      x0 = 495000
+      y0 = -2500
+      x1 = 505000
+      y1 = 2500
+
